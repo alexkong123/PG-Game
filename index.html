@@ -467,9 +467,9 @@
         /* 系統建議框 (調小版) */
         .advice-box {
             background: #2d3f5e;
-            border-radius: 16px;        /* 從24px調小 */
-            padding: 8px;               /* 從15px調小 */
-            min-width: 120px;            /* 從160px調小 */
+            border-radius: 16px;
+            padding: 8px;
+            min-width: 120px;
             flex: 0 0 auto;
             border: 2px solid #ffd966;
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
@@ -479,18 +479,18 @@
             text-align: center;
         }
         .advice-text {
-            font-size: 1.5rem;           /* 從2rem調小 */
+            font-size: 1.5rem;
             font-weight: 800;
             line-height: 1.2;
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         .advice-win {
-            background: #27ae60;  /* 綠色代表勝出優先 */
+            background: #27ae60;
             border-color: #2ecc71;
         }
         .advice-draw {
-            background: #f39c12;  /* 金色代表和局優先 */
+            background: #f39c12;
             border-color: #f1c40f;
         }
 
@@ -642,10 +642,10 @@
                             <div id="strategyDrawBtn" class="strategy-btn draw" onclick="setStrategy('draw')">🛡️ 和局優先</div>
                         </div>
 
-                        <!-- 推薦配牌 + 系統建議 (現在包含標籤) -->
+                        <!-- 推薦配牌 + 系統建議 (包含標籤) -->
                         <div class="best-group-title">🏠 推薦配牌 & 系統建議</div>
                         <div class="group-row" id="recommendedDisplay">
-                            <!-- 由 JavaScript 動態填入：頭墩、尾墩、含標籤的建議框 -->
+                            <!-- 由 JavaScript 動態填入 -->
                         </div>
 
                         <!-- 勝率卡片 -->
@@ -677,9 +677,7 @@
                 <!-- 右側歷史記錄面板 -->
                 <div class="history-panel">
                     <h3>📜 歷史記錄</h3>
-                    <div id="historyList">
-                        <!-- 歷史項目會動態加入 -->
-                    </div>
+                    <div id="historyList"></div>
                     <div class="history-actions">
                         <button class="small export" onclick="exportHistoryCSV()">📥 導出CSV</button>
                         <button class="small clear-history" onclick="clearHistory()">清除記錄</button>
@@ -969,6 +967,35 @@
                 return { bestWinRate, bestDrawRate };
             }
 
+            // 修改後的建議邏輯：當最佳勝率 ≥ 30% 時直接建議勝出優先
+            function updateAdvice() {
+                if (!currentHandStats) return;
+                let { bestWinRate, bestDrawRate } = getBestRates();
+                let adviceBox = document.getElementById('adviceBox');
+                let adviceText = document.getElementById('adviceText');
+                
+                let suggestion = '和局優先';
+                let adviceClass = 'advice-draw';
+
+                if (bestWinRate >= 0.3) {
+                    suggestion = '勝出優先';
+                    adviceClass = 'advice-win';
+                } else if (bestDrawRate > bestWinRate + 0.2) {
+                    suggestion = '和局優先';
+                    adviceClass = 'advice-draw';
+                } else if (bestWinRate > 0.25 && bestDrawRate > 0.25) {
+                    suggestion = '勝出優先';
+                    adviceClass = 'advice-win';
+                } else {
+                    suggestion = '和局優先';
+                    adviceClass = 'advice-draw';
+                }
+
+                adviceText.innerText = suggestion;
+                adviceBox.classList.remove('advice-win', 'advice-draw');
+                adviceBox.classList.add(adviceClass);
+            }
+
             function updateDisplayWithStrategy() {
                 if (!currentHandStats) return;
                 let legalGroups = currentHandStats.legalGroups;
@@ -997,21 +1024,18 @@
                 recBackDiv.innerHTML = '<div class="group-label">尾墩</div><div class="group-cards" id="recBack"></div>';
                 recContainer.appendChild(recBackDiv);
 
-                // --- 系統建議容器 (含標籤 + 建議框) ---
+                // 系統建議容器 (含標籤 + 建議框)
                 let adviceWrapper = document.createElement('div');
-                adviceWrapper.className = 'group-box';  // 與頭墩尾墩相同的樣式容器
-                // 標籤
+                adviceWrapper.className = 'group-box';
                 let adviceLabel = document.createElement('div');
                 adviceLabel.className = 'group-label';
                 adviceLabel.textContent = '系統建議';
                 adviceWrapper.appendChild(adviceLabel);
-                // 建議框
                 let adviceDiv = document.createElement('div');
                 adviceDiv.className = 'advice-box';
                 adviceDiv.id = 'adviceBox';
                 adviceDiv.innerHTML = '<div class="advice-text" id="adviceText">勝出優先</div>';
                 adviceWrapper.appendChild(adviceDiv);
-
                 recContainer.appendChild(adviceWrapper);
 
                 // 渲染頭尾墩
@@ -1026,31 +1050,6 @@
 
                 // 更新系統建議
                 updateAdvice();
-            }
-
-            function updateAdvice() {
-                if (!currentHandStats) return;
-                let { bestWinRate, bestDrawRate } = getBestRates();
-                let adviceBox = document.getElementById('adviceBox');
-                let adviceText = document.getElementById('adviceText');
-                
-                let suggestion = '和局優先';      // 預設為和局優先
-                let adviceClass = 'advice-draw';
-
-                if (bestDrawRate > bestWinRate + 0.2) {
-                    suggestion = '和局優先';
-                    adviceClass = 'advice-draw';
-                } else if (bestWinRate > 0.25 && bestDrawRate > 0.25) {
-                    suggestion = '勝出優先';
-                    adviceClass = 'advice-win';
-                } else {
-                    suggestion = '和局優先';
-                    adviceClass = 'advice-draw';
-                }
-
-                adviceText.innerText = suggestion;
-                adviceBox.classList.remove('advice-win', 'advice-draw');
-                adviceBox.classList.add(adviceClass);
             }
 
             function getBestIndexByStrategy(strategy, legalGroups, groupStats) {
