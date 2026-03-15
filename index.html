@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>牌九勝率分析 (Online版)</title>
+    <title>牌九勝率分析 (終極智慧版)</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -14,6 +14,7 @@
             margin: 0;
             padding: 20px;
             color: #e6e9f0;
+            min-width: 320px;
         }
         /* 密碼保護覆蓋層 */
         .password-overlay {
@@ -80,14 +81,237 @@
             min-height: 24px;
         }
 
-        /* 主要容器 – 半透明背景讓底圖透出 */
+        /* 開發者彈窗 */
+        .dev-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+            backdrop-filter: blur(3px);
+        }
+        .dev-box {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            text-align: center;
+            max-width: 800px;
+            width: 90%;
+            border: 2px solid #f39c12;
+            color: #ecf0f1;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .dev-box h3 {
+            margin-top: 0;
+            font-size: 1.8rem;
+            color: #f1c40f;
+        }
+        .dev-box input[type="password"] {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #7f8c8d;
+            border-radius: 40px;
+            margin: 15px 0;
+            background: #34495e;
+            color: white;
+            border: none;
+            outline: none;
+        }
+        .dev-box .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .dev-box button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            flex: 1 1 auto;
+            min-width: 140px;
+        }
+        .dev-box button.upload { background: #3498db; }
+        .dev-box button.download { background: #f39c12; }
+        .dev-box button.text-rule { background: #9b59b6; }
+        .dev-box button.copy { background: #e67e22; }
+        .dev-box button.change-pw { background: #1abc9c; }
+        .dev-box button.cancel {
+            background: #7f8c8d;
+            flex: 0 0 auto;
+            min-width: 100px;
+            margin-top: 10px;
+        }
+        .dev-box button:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        .dev-message {
+            margin-top: 15px;
+            min-height: 24px;
+            color: #f1c40f;
+        }
+        .rule-list {
+            margin-top: 20px;
+            text-align: left;
+            background: #34495e;
+            border-radius: 16px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .rule-list h4 {
+            margin: 0 0 10px 0;
+            color: #f1c40f;
+            font-size: 1.2rem;
+        }
+        .rule-item {
+            background: #2c3e50;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid #e67e22;
+        }
+        .rule-item .rule-text {
+            font-size: 0.9rem;
+            color: #ecf0f1;
+            word-break: break-word;
+            flex: 1;
+            margin-right: 10px;
+        }
+        .rule-item .delete-btn {
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 50px;
+        }
+        .rule-item .delete-btn:hover {
+            background: #e74c3c;
+            transform: scale(1.05);
+        }
+        .no-rules {
+            color: #95a5a6;
+            text-align: center;
+            padding: 10px;
+        }
+        .dev-textarea, .dev-pwchange {
+            margin-top: 15px;
+            display: none;
+        }
+        .dev-textarea textarea, .dev-pwchange input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 16px;
+            border: none;
+            background: #34495e;
+            color: white;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .dev-pwchange input {
+            min-height: auto;
+            margin-bottom: 10px;
+        }
+        .dev-textarea .action-btns, .dev-pwchange .action-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .dev-textarea .action-btns button, .dev-pwchange .action-btns button {
+            background: #2ecc71;
+            padding: 8px 15px;
+            font-size: 1rem;
+            min-width: auto;
+        }
+        .dev-textarea .action-btns button.cancel-small, .dev-pwchange .action-btns button.cancel-small {
+            background: #e67e22;
+        }
+        .rule-preview {
+            margin-top: 15px;
+            text-align: left;
+            background: #34495e;
+            padding: 10px;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .rule-preview pre {
+            margin: 0;
+            color: #f1c40f;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        /* 主要容器 – 半透明背景讓底圖透出，固定寬度 */
         .container {
             max-width: 1400px;
-            margin: auto;
-            background: rgba(240, 244, 250, 0.85); /* 原 #f0f4fa 改為半透明 */
+            margin: 0 auto;
+            background: rgba(240, 244, 250, 0.85);
             border-radius: 28px;
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            width: 100%;
+        }
+
+        /* 標題列 + 開發者按鈕 */
+        .title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .title-bar h1 {
+            margin: 0;
+            color: #1e3c5c;
+            font-weight: 600;
+        }
+        .dev-button {
+            background: #34495e;
+            color: #ecf0f1;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+        .dev-button:hover {
+            opacity: 1;
+            background: #2c3e50;
+            transform: scale(1.02);
+        }
+
+        .sub {
+            text-align: center;
+            color: #4a5b6e;
+            margin-bottom: 20px;
+            font-size: 1rem;
         }
 
         /* 頁籤樣式 */
@@ -97,6 +321,7 @@
             margin-bottom: 25px;
             border-bottom: 3px solid #cbd5e0;
             padding-bottom: 8px;
+            flex-wrap: wrap;
         }
         .tab {
             font-size: 1.3rem;
@@ -110,6 +335,7 @@
             border: 2px solid transparent;
             border-bottom: none;
             opacity: 0.7;
+            white-space: nowrap;
         }
         .tab.active {
             background: white;
@@ -135,9 +361,6 @@
             display: block;
             opacity: 1;
         }
-
-        h1 { text-align: center; color: #1e3c5c; margin-top: 0; margin-bottom: 8px; font-weight: 600; }
-        .sub { text-align: center; color: #4a5b6e; margin-bottom: 20px; font-size: 1rem; }
 
         /* 已選牌區域 (選牌頁) */
         .selected-area {
@@ -185,8 +408,6 @@
             border: 2px solid #ffd966;
             image-rendering: crisp-edges;
             image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
         }
         .selected-card .remove {
             position: absolute; top: -10px; right: -10px;
@@ -266,8 +487,6 @@
             background: white; border-radius: 10px; padding: 4px;
             image-rendering: crisp-edges;
             image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
         }
         .gallery-item .name-fallback {
             width: 100%; height: 100%;
@@ -284,6 +503,7 @@
             display: flex;
             gap: 20px;
             justify-content: center;
+            flex-wrap: wrap;
         }
         button {
             background: #1e88e5;
@@ -324,9 +544,11 @@
         .result-layout {
             display: flex;
             gap: 30px;
+            flex-wrap: wrap;
         }
         .result-main {
             flex: 2;
+            min-width: 300px;
         }
         .history-panel {
             flex: 1;
@@ -337,6 +559,7 @@
             backdrop-filter: blur(5px);
             max-height: 600px;
             overflow-y: auto;
+            min-width: 250px;
         }
         .history-panel h3 {
             color: #0a3144;
@@ -359,12 +582,14 @@
             color: #0b3954;
             margin-bottom: 5px;
             font-size: 0.95rem;
+            word-break: break-word;
         }
         .history-item .stats {
             display: flex;
             gap: 10px;
             font-size: 0.85rem;
             color: #2c3e50;
+            flex-wrap: wrap;
         }
         .history-item .stats span {
             background: #e2e8f0;
@@ -380,6 +605,7 @@
             gap: 10px;
             margin-top: 15px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         /* 結果卡片 */
@@ -413,8 +639,6 @@
             padding: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             image-rendering: crisp-edges;
             image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
         }
         .hand-display .placeholder {
             width: 100%; height: 100%;
@@ -433,6 +657,7 @@
         .group-box {
             text-align: center;
             flex: 1 1 auto;
+            min-width: 120px;
         }
         .group-label {
             font-weight: 600;
@@ -454,8 +679,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             image-rendering: crisp-edges;
             image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: -webkit-optimize-contrast;
         }
         .group-cards .placeholder {
             width: 100%; height: 100%;
@@ -464,7 +687,7 @@
             color: #2c3e50; font-size: 12px;
         }
 
-        /* 系統建議框 (調小版) */
+        /* 系統建議框 */
         .advice-box {
             background: #2d3f5e;
             border-radius: 16px;
@@ -485,21 +708,18 @@
             color: white;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
-        .advice-win {
-            background: #27ae60;
-            border-color: #2ecc71;
-        }
-        .advice-draw {
-            background: #f39c12;
-            border-color: #f1c40f;
-        }
+        .advice-win { background: #27ae60; border-color: #2ecc71; }
+        .advice-draw { background: #f39c12; border-color: #f1c40f; }
+        .advice-gray { background: #95a5a6; border-color: #7f8c8d; }
+        .advice-rule { background: #3498db; border-color: #2980b9; }
 
-        /* 策略切換按鈕 (結果頁) */
+        /* 策略切換按鈕 */
         .strategy-switch {
             display: flex;
             gap: 20px;
             justify-content: center;
             margin: 20px 0 10px;
+            flex-wrap: wrap;
         }
         .strategy-btn {
             padding: 12px 30px;
@@ -536,30 +756,19 @@
             padding: 12px 0;
             border-bottom: 1px solid #e2e8f0;
             font-size: 1.2rem;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .stats-row:last-child {
-            border-bottom: none;
-        }
-        .stats-label {
-            font-weight: 600;
-            color: #0a3144;
-        }
-        .stats-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #0b5e7c;
-        }
-        .stats-percent {
-            font-size: 1.2rem;
-            color: #4a5b6e;
-            margin-left: 5px;
-        }
+        .stats-row:last-child { border-bottom: none; }
+        .stats-label { font-weight: 600; color: #0a3144; }
+        .stats-value { font-size: 1.8rem; font-weight: 700; color: #0b5e7c; }
 
         .result-actions {
             display: flex;
             gap: 20px;
             justify-content: center;
             margin-top: 25px;
+            flex-wrap: wrap;
         }
 
         .error-msg {
@@ -587,17 +796,64 @@
         </div>
     </div>
 
-    <div class="container">
-        <h1>🀄️ 牌九勝率分析</h1>
-        <div class="sub">點擊牌庫選牌，結果頁可切換策略・按「下一局」才記錄</div>
+    <!-- 開發者彈窗 -->
+    <div id="devOverlay" class="dev-overlay">
+        <div class="dev-box">
+            <h3>🔧 開發者模式</h3>
+            <input type="password" id="devPassword" placeholder="請輸入開發者密碼">
+            <div class="button-group">
+                <button class="upload" id="devUploadBtn">📤 上傳新規則</button>
+                <button class="download" id="devDownloadBtn">📥 下載規則範本 (Word)</button>
+                <button class="text-rule" id="devTextRuleBtn">📝 輸入規則文字</button>
+                <button class="copy" id="devCopyBtn">📋 複製規則內容</button>
+                <button class="change-pw" id="devChangeLoginPwBtn">🔑 修改登入密碼</button>
+                <button class="change-pw" id="devChangeDevPwBtn">🔒 修改開發者密碼</button>
+            </div>
+            <!-- 文字規則輸入區塊 -->
+            <div class="dev-textarea" id="devTextArea">
+                <textarea id="ruleTextInput" placeholder="請輸入規則描述，支援多種格式：&#10;1. 當手牌有兩張天牌和一張雜七、一張雜八時，天牌不能拆開&#10;2. 如果手牌有人牌、雜八、板凳，搭配零霖六或高腳七或雜七或雜九時，人牌必須放尾墩&#10;3. 頭墩點數必須大於等於6點，尾墩點數必須小於等於4點，且頭墩必須比尾墩小"></textarea>
+                <div class="action-btns">
+                    <button id="parseRuleBtn">✅ 確認</button>
+                    <button class="cancel-small" id="cancelTextBtn">❌ 取消</button>
+                </div>
+                <div class="rule-preview" id="rulePreview">
+                    <pre id="rulePreviewContent"></pre>
+                </div>
+            </div>
+            <!-- 修改密碼輸入區塊 -->
+            <div class="dev-pwchange" id="devPwChangeArea">
+                <input type="password" id="newPw1" placeholder="請輸入新密碼">
+                <input type="password" id="newPw2" placeholder="請再次輸入新密碼">
+                <div class="action-btns">
+                    <button id="confirmPwChangeBtn">✅ 確認</button>
+                    <button class="cancel-small" id="cancelPwChangeBtn">❌ 取消</button>
+                </div>
+            </div>
+            <!-- 規則列表區塊 -->
+            <div class="rule-list" id="ruleList">
+                <h4>📋 目前自訂規則 (點選刪除)</h4>
+                <div id="ruleItemsContainer"></div>
+            </div>
+            <!-- 取消按鈕 -->
+            <button class="cancel" id="devCancelBtn">取消</button>
+            <div id="devMessage" class="dev-message"></div>
+            <input type="file" id="devFileInput" style="display: none;" accept=".json,application/json">
+        </div>
+    </div>
 
-        <!-- 頁籤列 -->
+    <div class="container">
+        <div class="title-bar">
+            <h1>🀄️ 牌九勝率分析 (終極智慧版)</h1>
+            <button class="dev-button" id="devButton">👨‍💻 開發者模式</button>
+        </div>
+        <div class="sub">點擊牌庫選牌，結果頁可切換策略・按「下一局」才記錄・規則自動儲存</div>
+
         <div class="tab-bar">
             <div class="tab active" data-tab="pick">🃏 選牌</div>
             <div class="tab" data-tab="result">📊 結果</div>
         </div>
 
-        <!-- 選牌頁籤內容 -->
+        <!-- 選牌頁 -->
         <div class="tab-content active" id="tab-pick">
             <div class="selected-area">
                 <div class="selected-title">
@@ -612,69 +868,40 @@
                     <div class="placeholder" data-index="3">第4張</div>
                 </div>
             </div>
-
-            <div class="gallery-title">
-                <span>🃏</span> 牌庫 (32張) — 點擊牌加入 / 移除
-            </div>
+            <div class="gallery-title"><span>🃏</span> 牌庫 (32張) — 點擊牌加入 / 移除</div>
             <div class="card-gallery" id="cardGallery"></div>
-
             <div class="btn-area">
                 <button onclick="calculateAndShowResult()">🔍 開始計算勝率</button>
                 <button class="reset" onclick="resetSelection()">⟲ 全部清除</button>
             </div>
         </div>
 
-        <!-- 結果頁籤內容 -->
+        <!-- 結果頁 -->
         <div class="tab-content" id="tab-result">
             <div class="result-layout">
-                <!-- 左側主要結果 -->
                 <div class="result-main">
                     <div class="result-box" id="resultArea">
                         <h3 style="margin-top:0; color:#0a3b5b;">📈 分析結果</h3>
-
-                        <!-- 顯示已選的四張牌 -->
                         <div class="your-hand-title">🃏 你的手牌</div>
                         <div class="hand-display" id="resultHandDisplay"></div>
-
-                        <!-- 策略切換按鈕 (結果頁內) -->
                         <div class="strategy-switch">
                             <div id="strategyWinBtn" class="strategy-btn win active" onclick="setStrategy('win')">⚔️ 勝出優先</div>
                             <div id="strategyDrawBtn" class="strategy-btn draw" onclick="setStrategy('draw')">🛡️ 和局優先</div>
                         </div>
-
-                        <!-- 推薦配牌 + 系統建議 (包含標籤) -->
                         <div class="best-group-title">🏠 推薦配牌 & 系統建議</div>
-                        <div class="group-row" id="recommendedDisplay">
-                            <!-- 由 JavaScript 動態填入 -->
-                        </div>
-
-                        <!-- 勝率卡片 -->
+                        <div class="group-row" id="recommendedDisplay"></div>
                         <div class="stats-card">
-                            <div class="stats-row">
-                                <span class="stats-label">勝率</span>
-                                <span><span class="stats-value" id="winRate">0%</span></span>
-                            </div>
-                            <div class="stats-row">
-                                <span class="stats-label">和率</span>
-                                <span><span class="stats-value" id="drawRate">0%</span></span>
-                            </div>
-                            <div class="stats-row">
-                                <span class="stats-label">負率</span>
-                                <span><span class="stats-value" id="loseRate">0%</span></span>
-                            </div>
-                            <div style="margin-top:15px; font-size:0.9rem; color:#4a5b6e; text-align:center;">
-                                總對手數：<span id="totalOpp">0</span>
-                            </div>
+                            <div class="stats-row"><span class="stats-label">勝率</span><span><span class="stats-value" id="winRate">0%</span></span></div>
+                            <div class="stats-row"><span class="stats-label">和率</span><span><span class="stats-value" id="drawRate">0%</span></span></div>
+                            <div class="stats-row"><span class="stats-label">負率</span><span><span class="stats-value" id="loseRate">0%</span></span></div>
+                            <div style="margin-top:15px; font-size:0.9rem; color:#4a5b6e; text-align:center;">總對手數：<span id="totalOpp">0</span></div>
                         </div>
-
                         <div class="result-actions">
                             <button class="small" onclick="switchTab('pick')">⟲ 返回選牌</button>
                             <button class="small next-round" onclick="nextRound()">⏩ 下一局 (記錄並返回)</button>
                         </div>
                     </div>
                 </div>
-
-                <!-- 右側歷史記錄面板 -->
                 <div class="history-panel">
                     <h3>📜 歷史記錄</h3>
                     <div id="historyList"></div>
@@ -695,6 +922,31 @@
 
     <script>
         (function() {
+            // ---------- 密碼管理 ----------
+            const STORAGE_LOGIN_PW = 'paijiu_login_password';
+            const STORAGE_DEV_PW = 'paijiu_dev_password';
+            const STORAGE_RULES = 'paijiu_custom_rules';
+
+            function getLoginPassword() {
+                return localStorage.getItem(STORAGE_LOGIN_PW) || '@123456';
+            }
+            function getDevPassword() {
+                return localStorage.getItem(STORAGE_DEV_PW) || '123456';
+            }
+            function setLoginPassword(pw) {
+                localStorage.setItem(STORAGE_LOGIN_PW, pw);
+            }
+            function setDevPassword(pw) {
+                localStorage.setItem(STORAGE_DEV_PW, pw);
+            }
+            function saveRulesToStorage(rules) {
+                try { localStorage.setItem(STORAGE_RULES, JSON.stringify(rules)); } catch (e) {}
+            }
+            function loadRulesFromStorage() {
+                try { const stored = localStorage.getItem(STORAGE_RULES); if (stored) return JSON.parse(stored); } catch (e) {}
+                return [];
+            }
+
             // ---------- 牌九核心資料 ----------
             const tiles = [
                 "天牌A", "天牌B", "地牌A", "地牌B", "人牌A", "人牌B", "和牌A", "和牌B",
@@ -724,12 +976,14 @@
             };
 
             const rankMap = {
-                "天牌": 31, "地牌": 30, "人牌": 29, "和牌": 28, "梅牌": 27, "長三": 26,
-                "板凳": 25, "斧頭": 24, "紅頭": 23, "高腳七": 22, "零霖六": 21,
-                "雜九": 16, "雜八": 15, "雜七": 14, "雜五": 13, "二四": 12, "幺二": 11
+                "天牌":31,"地牌":30,"人牌":29,"和牌":28,"梅牌":27,"長三":26,
+                "板凳":25,"斧頭":24,"紅頭":23,"高腳七":22,"零霖六":21,
+                "雜九":16,"雜八":15,"雜七":14,"雜五":13,"二四":12,"幺二":11
             };
 
-            // ---------- 圖片路徑：指向 GitHub 上的 IMAGE 資料夾 ----------
+            let customRules = loadRulesFromStorage();
+
+            // ---------- 圖片路徑：GitHub 上的 IMAGE 資料夾 ----------
             const IMAGE_PATH = 'https://raw.githubusercontent.com/alexkong123/PG-Game/04136cf202a2722f5d3e1070eb34d2030f698a35/image/';
 
             // ---------- 輔助函數 ----------
@@ -737,58 +991,40 @@
                 let a = tileDetails[cardA], b = tileDetails[cardB];
                 let pointsA = a.d1 + a.d2;
                 let pointsB = b.d1 + b.d2;
-                
                 let variableCards = [];
                 if (a.type === "二四" || a.type === "幺二") variableCards.push({card: cardA, base: pointsA});
                 if (b.type === "二四" || b.type === "幺二") variableCards.push({card: cardB, base: pointsB});
-                
-                if (variableCards.length === 0) {
-                    return (pointsA + pointsB) % 10;
-                } else {
-                    let best = -1;
-                    if (variableCards.length === 1) {
-                        let fixedCard = variableCards[0].card === cardA ? cardB : cardA;
-                        let fixedPoints = (fixedCard === cardA ? pointsA : pointsB);
-                        for (let val of [3, 6]) {
-                            let total = fixedPoints + val;
-                            let p = total % 10;
-                            if (p > best) best = p;
-                        }
-                    } else {
-                        for (let v1 of [3, 6]) {
-                            for (let v2 of [3, 6]) {
-                                let total = v1 + v2;
-                                let p = total % 10;
-                                if (p > best) best = p;
-                            }
-                        }
+                if (variableCards.length === 0) return (pointsA + pointsB) % 10;
+                let best = -1;
+                if (variableCards.length === 1) {
+                    let fixedCard = variableCards[0].card === cardA ? cardB : cardA;
+                    let fixedPoints = (fixedCard === cardA ? pointsA : pointsB);
+                    for (let val of [3,6]) {
+                        let p = (fixedPoints + val) % 10;
+                        if (p > best) best = p;
                     }
-                    return best;
+                } else {
+                    for (let v1 of [3,6]) for (let v2 of [3,6]) {
+                        let p = (v1 + v2) % 10;
+                        if (p > best) best = p;
+                    }
                 }
+                return best;
             }
 
             function getRank(cardA, cardB) {
                 if (cardA === cardB) return -1;
                 let a = tileDetails[cardA], b = tileDetails[cardB];
                 if (!a || !b) return -1;
-
-                if ((a.type === "二四" && b.type === "幺二") || (a.type === "幺二" && b.type === "二四")) {
-                    return 40000;
-                }
-
-                if (a.type === b.type) {
-                    return 30000 + rankMap[a.type] * 100;
-                }
-
+                if ((a.type === "二四" && b.type === "幺二") || (a.type === "幺二" && b.type === "二四")) return 40000;
+                if (a.type === b.type) return 30000 + rankMap[a.type] * 100;
                 let typeA = a.type, typeB = b.type;
-
                 if ((typeA === "天牌" && typeB === "雜九") || (typeA === "雜九" && typeB === "天牌")) return 29500;
                 if ((typeA === "地牌" && typeB === "雜九") || (typeA === "雜九" && typeB === "地牌")) return 29400;
                 if ((typeA === "天牌" && (typeB === "人牌" || typeB === "雜八")) || 
                     (typeB === "天牌" && (typeA === "人牌" || typeA === "雜八"))) return 29300;
                 if ((typeA === "地牌" && (typeB === "人牌" || typeB === "雜八")) || 
                     (typeB === "地牌" && (typeA === "人牌" || typeA === "雜八"))) return 29200;
-
                 let rankA = rankMap[typeA], rankB = rankMap[typeB];
                 let points = getBestPoints(cardA, cardB);
                 let maxRank = Math.max(rankA, rankB);
@@ -815,32 +1051,88 @@
                 return comparePair(back, front) >= 0;
             }
 
+            function checkCondition(condition, typeCount) {
+                if (!condition) return true;
+                for (let [type, count] of Object.entries(condition)) {
+                    if ((typeCount[type] || 0) < count) return false;
+                }
+                return true;
+            }
+
+            function isAnyRuleTriggered(hand) {
+                if (customRules.length === 0) return false;
+                let typeCount = {};
+                hand.forEach(card => { let type = tileDetails[card].type; typeCount[type] = (typeCount[type]||0)+1; });
+                for (let rule of customRules) {
+                    if (checkCondition(rule.condition, typeCount)) return true;
+                }
+                return false;
+            }
+
             function getLegalGroups(hand) {
                 let all = generateAllGroups(hand);
-                
                 let typeCount = {};
-                hand.forEach(card => {
-                    let type = tileDetails[card].type;
-                    typeCount[type] = (typeCount[type] || 0) + 1;
-                });
+                hand.forEach(card => { let type = tileDetails[card].type; typeCount[type] = (typeCount[type]||0)+1; });
                 let pairs = [];
-                for (let type in typeCount) {
-                    if (typeCount[type] === 2) pairs.push(type);
-                }
-                
+                for (let type in typeCount) if (typeCount[type] === 2) pairs.push(type);
                 return all.filter(g => {
                     if (!isLegalGroup(g.front, g.back)) return false;
-                    
                     if (pairs.length === 1) {
                         let pairType = pairs[0];
                         let frontType0 = tileDetails[g.front[0]].type;
                         let frontType1 = tileDetails[g.front[1]].type;
-                        if (frontType0 === pairType && frontType1 === pairType) {
-                            return false;
+                        if (frontType0 === pairType && frontType1 === pairType) return false;
+                    }
+                    for (let rule of customRules) {
+                        if (!checkCondition(rule.condition, typeCount)) continue;
+                        if (rule.type === "split_pair") {
+                            let pairType = rule.pairType;
+                            if (!typeCount[pairType]) continue;
+                            let frontTypes = g.front.map(c => tileDetails[c].type);
+                            let backTypes = g.back.map(c => tileDetails[c].type);
+                            if (frontTypes.includes(pairType) && backTypes.includes(pairType)) return false;
+                        } else if (rule.type === "must_split") {
+                            let pairType = rule.pairType;
+                            if (!typeCount[pairType] || typeCount[pairType] < 2) continue;
+                            let frontTypes = g.front.map(c => tileDetails[c].type);
+                            let backTypes = g.back.map(c => tileDetails[c].type);
+                            if (frontTypes.filter(t => t === pairType).length === 2) return false;
+                            if (backTypes.filter(t => t === pairType).length === 2) return false;
+                        } else if (rule.type === "must_front") {
+                            let targetType = rule.targetType;
+                            if (!typeCount[targetType]) continue;
+                            let frontTypes = g.front.map(c => tileDetails[c].type);
+                            let frontCount = frontTypes.filter(t => t === targetType).length;
+                            if (frontCount !== typeCount[targetType]) return false;
+                        } else if (rule.type === "must_back") {
+                            let targetType = rule.targetType;
+                            if (!typeCount[targetType]) continue;
+                            let backTypes = g.back.map(c => tileDetails[c].type);
+                            let backCount = backTypes.filter(t => t === targetType).length;
+                            if (backCount !== typeCount[targetType]) return false;
+                        } else if (rule.type === "front_points") {
+                            let frontPoints = getBestPoints(g.front[0], g.front[1]);
+                            if (!comparePoints(frontPoints, rule.comparison, rule.value)) return false;
+                        } else if (rule.type === "back_points") {
+                            let backPoints = getBestPoints(g.back[0], g.back[1]);
+                            if (!comparePoints(backPoints, rule.comparison, rule.value)) return false;
+                        } else if (rule.type === "front_less_than_back") {
+                            let frontPoints = getBestPoints(g.front[0], g.front[1]);
+                            let backPoints = getBestPoints(g.back[0], g.back[1]);
+                            if (frontPoints >= backPoints) return false;
                         }
                     }
                     return true;
                 });
+            }
+
+            function comparePoints(points, comp, val) {
+                if (comp === '>=') return points >= val;
+                if (comp === '<=') return points <= val;
+                if (comp === '>') return points > val;
+                if (comp === '<') return points < val;
+                if (comp === '=') return points === val;
+                return true;
             }
 
             function battleWithGroup(handA, handB, front, back) {
@@ -856,60 +1148,35 @@
             }
 
             function generateAllCombinations() {
-                let result = [], n=32, k=4;
+                let result = [], n = tiles.length, k = 4;
                 function comb(start, cur) {
-                    if (cur.length === k) {
-                        result.push(cur.map(i=>tiles[i]));
-                        return;
-                    }
-                    for (let i=start; i<n; i++) {
-                        cur.push(i);
-                        comb(i+1, cur);
-                        cur.pop();
-                    }
+                    if (cur.length === k) { result.push(cur.map(i => tiles[i])); return; }
+                    for (let i = start; i < n; i++) { cur.push(i); comb(i+1, cur); cur.pop(); }
                 }
                 comb(0, []);
                 return result;
             }
-            const allCombinations = generateAllCombinations();
+            let allCombinations = generateAllCombinations();
 
             // ---------- UI 狀態 ----------
             let selectedCards = [];
             const MAX_SELECT = 4;
-
             let historyRecords = [];
             let currentStrategy = 'win';
             let currentHandStats = null;
             let currentHand = null;
-
-            // ---------- 歷史記錄持久化 ----------
             const STORAGE_KEY = 'paijiu_history';
             const MAX_HISTORY = 1000;
 
             function loadHistoryFromStorage() {
-                try {
-                    const stored = localStorage.getItem(STORAGE_KEY);
-                    if (stored) {
-                        return JSON.parse(stored);
-                    }
-                } catch (e) {
-                    console.error('Failed to load history from storage', e);
-                }
+                try { const stored = localStorage.getItem(STORAGE_KEY); if (stored) return JSON.parse(stored); } catch (e) {}
                 return [];
             }
-
             function saveHistoryToStorage(history) {
-                try {
-                    if (history.length > MAX_HISTORY) {
-                        history = history.slice(0, MAX_HISTORY);
-                    }
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-                } catch (e) {
-                    console.error('Failed to save history to storage', e);
-                }
+                try { if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY); localStorage.setItem(STORAGE_KEY, JSON.stringify(history)); } catch (e) {}
             }
 
-            // 密碼驗證邏輯
+            // 密碼驗證
             const overlay = document.getElementById('passwordOverlay');
             const submitBtn = document.getElementById('passwordSubmit');
             const passwordInput = document.getElementById('passwordInput');
@@ -922,7 +1189,7 @@
             }
 
             submitBtn.addEventListener('click', function() {
-                if (passwordInput.value === '@123456') {
+                if (passwordInput.value === getLoginPassword()) {
                     overlay.style.display = 'none';
                     sessionStorage.setItem('paijiu_auth', 'true');
                     historyRecords = loadHistoryFromStorage();
@@ -933,12 +1200,415 @@
                     passwordInput.focus();
                 }
             });
+            passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') submitBtn.click(); });
 
-            passwordInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    submitBtn.click();
+            // ---------- 開發者功能 ----------
+            const devOverlay = document.getElementById('devOverlay');
+            const devButton = document.getElementById('devButton');
+            const devPassword = document.getElementById('devPassword');
+            const devUploadBtn = document.getElementById('devUploadBtn');
+            const devDownloadBtn = document.getElementById('devDownloadBtn');
+            const devTextRuleBtn = document.getElementById('devTextRuleBtn');
+            const devCopyBtn = document.getElementById('devCopyBtn');
+            const devChangeLoginPwBtn = document.getElementById('devChangeLoginPwBtn');
+            const devChangeDevPwBtn = document.getElementById('devChangeDevPwBtn');
+            const devCancelBtn = document.getElementById('devCancelBtn');
+            const devMessage = document.getElementById('devMessage');
+            const devFileInput = document.getElementById('devFileInput');
+            const devTextArea = document.getElementById('devTextArea');
+            const ruleTextInput = document.getElementById('ruleTextInput');
+            const parseRuleBtn = document.getElementById('parseRuleBtn');
+            const cancelTextBtn = document.getElementById('cancelTextBtn');
+            const devPwChangeArea = document.getElementById('devPwChangeArea');
+            const newPw1 = document.getElementById('newPw1');
+            const newPw2 = document.getElementById('newPw2');
+            const confirmPwChangeBtn = document.getElementById('confirmPwChangeBtn');
+            const cancelPwChangeBtn = document.getElementById('cancelPwChangeBtn');
+            const rulePreview = document.getElementById('rulePreview');
+            const rulePreviewContent = document.getElementById('rulePreviewContent');
+            const ruleItemsContainer = document.getElementById('ruleItemsContainer');
+
+            let currentDevAction = '';
+            let currentPwTarget = '';
+
+            function renderRuleList() {
+                if (!ruleItemsContainer) return;
+                if (customRules.length === 0) {
+                    ruleItemsContainer.innerHTML = '<div class="no-rules">📭 目前無自訂規則</div>';
+                    return;
                 }
+                let html = '';
+                customRules.forEach((rule, index) => {
+                    let ruleText = '';
+                    if (rule.type === 'split_pair') ruleText = `⛔ 禁止拆分：${rule.pairType}`;
+                    else if (rule.type === 'must_split') ruleText = `🔀 必須拆分：${rule.pairType}`;
+                    else if (rule.type === 'must_front') ruleText = `⬆️ 必須放頭墩：${rule.targetType}`;
+                    else if (rule.type === 'must_back') ruleText = `⬇️ 必須放尾墩：${rule.targetType}`;
+                    else if (rule.type === 'front_points') ruleText = `頭墩點數 ${rule.comparison} ${rule.value}`;
+                    else if (rule.type === 'back_points') ruleText = `尾墩點數 ${rule.comparison} ${rule.value}`;
+                    else if (rule.type === 'front_less_than_back') ruleText = `頭墩 < 尾墩`;
+                    else ruleText = JSON.stringify(rule);
+                    if (rule.condition && Object.keys(rule.condition).length > 0) {
+                        const condStr = Object.entries(rule.condition).map(([k,v]) => `${k}${v}張`).join('、');
+                        ruleText = `[若 ${condStr}] ` + ruleText;
+                    }
+                    html += `<div class="rule-item"><span class="rule-text">${ruleText}</span><button class="delete-btn" data-index="${index}">🗑️ 刪除</button></div>`;
+                });
+                ruleItemsContainer.innerHTML = html;
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        const index = this.dataset.index;
+                        if (devPassword.value !== getDevPassword()) {
+                            devMessage.textContent = '❌ 開發者密碼錯誤，無法刪除';
+                            return;
+                        }
+                        if (!confirm('確定要刪除此規則嗎？')) return;
+                        customRules.splice(index, 1);
+                        saveRulesToStorage(customRules);
+                        renderRuleList();
+                        devMessage.textContent = '✅ 規則已刪除';
+                        selectedCards = [];
+                        currentHandStats = null; currentHand = null;
+                        updateSelectedUI(); renderGallery();
+                        document.getElementById('resultHandDisplay').innerHTML = '';
+                        document.getElementById('recommendedDisplay').innerHTML = '';
+                        document.getElementById('winRate').innerText = '0%';
+                        document.getElementById('drawRate').innerText = '0%';
+                        document.getElementById('loseRate').innerText = '0%';
+                        document.getElementById('totalOpp').innerText = '0';
+                    });
+                });
+            }
+
+            devButton.addEventListener('click', () => {
+                devOverlay.style.display = 'flex';
+                devPassword.value = '';
+                devMessage.textContent = '';
+                devFileInput.style.display = 'none';
+                devTextArea.style.display = 'none';
+                devPwChangeArea.style.display = 'none';
+                rulePreview.style.display = 'none';
+                renderRuleList();
+                currentDevAction = '';
             });
+
+            devUploadBtn.addEventListener('click', () => {
+                if (devPassword.value === getDevPassword()) {
+                    currentDevAction = 'upload';
+                    devMessage.textContent = '請選擇 JSON 規則檔案';
+                    devTextArea.style.display = 'none';
+                    devPwChangeArea.style.display = 'none';
+                    devFileInput.click();
+                } else devMessage.textContent = '❌ 開發者密碼錯誤';
+            });
+
+            devDownloadBtn.addEventListener('click', () => {
+                if (devPassword.value === getDevPassword()) downloadWordTemplate();
+                else devMessage.textContent = '❌ 開發者密碼錯誤';
+            });
+
+            devTextRuleBtn.addEventListener('click', () => {
+                if (devPassword.value === getDevPassword()) {
+                    devMessage.textContent = '';
+                    devFileInput.style.display = 'none';
+                    devPwChangeArea.style.display = 'none';
+                    devTextArea.style.display = 'block';
+                    rulePreview.style.display = 'none';
+                    ruleTextInput.value = '';
+                } else devMessage.textContent = '❌ 開發者密碼錯誤';
+            });
+
+            devCopyBtn.addEventListener('click', () => {
+                if (devPassword.value === getDevPassword()) copyRulesToClipboard();
+                else devMessage.textContent = '❌ 開發者密碼錯誤';
+            });
+
+            devChangeLoginPwBtn.addEventListener('click', () => {
+                if (devPassword.value === getDevPassword()) {
+                    currentPwTarget = 'login';
+                    devMessage.textContent = '';
+                    devTextArea.style.display = 'none';
+                    devFileInput.style.display = 'none';
+                    devPwChangeArea.style.display = 'block';
+                    newPw1.value = ''; newPw2.value = '';
+                } else devMessage.textContent = '❌ 開發者密碼錯誤';
+            });
+
+            devChangeDevPwBtn.addEventListener('click', () => {
+                if (devPassword.value === getDevPassword()) {
+                    currentPwTarget = 'dev';
+                    devMessage.textContent = '';
+                    devTextArea.style.display = 'none';
+                    devFileInput.style.display = 'none';
+                    devPwChangeArea.style.display = 'block';
+                    newPw1.value = ''; newPw2.value = '';
+                } else devMessage.textContent = '❌ 開發者密碼錯誤';
+            });
+
+            confirmPwChangeBtn.addEventListener('click', () => {
+                const pw1 = newPw1.value.trim();
+                const pw2 = newPw2.value.trim();
+                if (!pw1 || !pw2) { devMessage.textContent = '❌ 密碼不可為空'; return; }
+                if (pw1 !== pw2) { devMessage.textContent = '❌ 兩次輸入的密碼不一致'; return; }
+                if (currentPwTarget === 'login') setLoginPassword(pw1);
+                else if (currentPwTarget === 'dev') setDevPassword(pw1);
+                devMessage.textContent = '✅ 密碼修改成功！';
+                devPwChangeArea.style.display = 'none';
+                setTimeout(() => devOverlay.style.display = 'none', 1500);
+            });
+
+            cancelPwChangeBtn.addEventListener('click', () => devPwChangeArea.style.display = 'none');
+            cancelTextBtn.addEventListener('click', () => { devTextArea.style.display = 'none'; rulePreview.style.display = 'none'; });
+            devCancelBtn.addEventListener('click', () => devOverlay.style.display = 'none');
+
+            // ---------- 智慧規則解析器 ----------
+            function parseChineseNumber(str) {
+                const map = {'一':1,'二':2,'兩':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+                if (str.match(/^\d+$/)) return parseInt(str,10);
+                return map[str] || 1;
+            }
+            function parseComparison(str) {
+                if (str.includes('>=') || str.includes('不小於') || str.includes('大於等於')) return '>=';
+                if (str.includes('<=') || str.includes('不大於') || str.includes('小於等於')) return '<=';
+                if (str.includes('>') || str.includes('大於')) return '>';
+                if (str.includes('<') || str.includes('小於')) return '<';
+                if (str.includes('=') || str.includes('等於')) return '=';
+                return '=';
+            }
+            function parseAction(actionStr) {
+                const actions = [];
+                const splitMatch = actionStr.match(/([^不能拆開\s]+)\s*不能拆開/);
+                if (splitMatch) actions.push({ type: 'split_pair', pairType: splitMatch[1].trim() });
+                const mustSplitMatch = actionStr.match(/([^一定要拆開必須\s]+)\s*(?:一定要拆開|必須拆開)/);
+                if (mustSplitMatch) actions.push({ type: 'must_split', pairType: mustSplitMatch[1].trim() });
+                const placeMatch = actionStr.match(/([^放頭墩放尾墩\s]+)\s*放(頭|尾)墩/);
+                if (placeMatch) {
+                    const type = placeMatch[2] === '頭' ? 'must_front' : 'must_back';
+                    actions.push({ type, targetType: placeMatch[1].trim() });
+                }
+                const frontPointsMatch = actionStr.match(/(頭墩|前面)點數(必須)?\s*([<>]=?|大於等於|不小於|大於|小於等於|不大於|小於|等於)\s*(\d+)/);
+                if (frontPointsMatch) {
+                    const comp = parseComparison(frontPointsMatch[3]);
+                    const val = parseInt(frontPointsMatch[4],10);
+                    actions.push({ type:'front_points', comparison:comp, value:val });
+                }
+                const backPointsMatch = actionStr.match(/(尾墩|後面)點數(必須)?\s*([<>]=?|大於等於|不小於|大於|小於等於|不大於|小於|等於)\s*(\d+)/);
+                if (backPointsMatch) {
+                    const comp = parseComparison(backPointsMatch[3]);
+                    const val = parseInt(backPointsMatch[4],10);
+                    actions.push({ type:'back_points', comparison:comp, value:val });
+                }
+                if (actionStr.includes('頭墩比尾墩小') || actionStr.includes('頭墩小於尾墩')) actions.push({ type:'front_less_than_back' });
+                return actions;
+            }
+            function parseCondition(conditionStr) {
+                if (!conditionStr) return [null];
+                const parts = conditionStr.split(/[、，,和]+/).map(s => s.trim()).filter(s => s.length > 0);
+                const conditions = [];
+                for (let part of parts) {
+                    const condition = {};
+                    const matches = part.matchAll(/([一二兩三四五六七八九十\d]+)\s*張?\s*([^、，,\s]+)/g);
+                    for (const match of matches) {
+                        const numStr = match[1];
+                        const typeName = match[2].trim();
+                        let count = parseChineseNumber(numStr);
+                        condition[typeName] = (condition[typeName] || 0) + count;
+                    }
+                    if (Object.keys(condition).length > 0) conditions.push(condition);
+                }
+                return conditions.length > 0 ? conditions : [null];
+            }
+            function parseSingleRule(sentence) {
+                let conditionPart = '';
+                let actionPart = sentence;
+                const conditionMatch = sentence.match(/(?:當|如果)(.+?)(?:時|，|,)/);
+                if (conditionMatch) {
+                    conditionPart = conditionMatch[1];
+                    actionPart = sentence.substring(conditionMatch[0].length);
+                }
+                const conditions = parseCondition(conditionPart);
+                const actionRules = parseAction(actionPart);
+                if (!actionRules || actionRules.length === 0) return null;
+                const result = [];
+                for (let cond of conditions) {
+                    for (let act of actionRules) {
+                        result.push({ ...act, condition: cond });
+                    }
+                }
+                return result;
+            }
+            function parseNaturalRule(text) {
+                const rules = [];
+                const sentences = text.split(/[。；\n]+/).filter(s => s.trim().length > 0);
+                for (let sentence of sentences) {
+                    const parsed = parseSingleRule(sentence);
+                    if (parsed) {
+                        if (Array.isArray(parsed)) rules.push(...parsed);
+                        else rules.push(parsed);
+                    }
+                }
+                return rules.length > 0 ? rules : null;
+            }
+
+            parseRuleBtn.addEventListener('click', () => {
+                const text = ruleTextInput.value.trim();
+                if (!text) { devMessage.textContent = '❌ 請輸入規則描述'; return; }
+                const rules = parseNaturalRule(text);
+                if (rules && rules.length > 0) {
+                    customRules = rules;
+                    saveRulesToStorage(customRules);
+                    rulePreviewContent.textContent = JSON.stringify(rules, null, 2);
+                    rulePreview.style.display = 'block';
+                    devMessage.textContent = `✅ 成功解析 ${rules.length} 條規則！`;
+                    selectedCards = [];
+                    currentHandStats = null; currentHand = null;
+                    updateSelectedUI(); renderGallery();
+                    document.getElementById('resultHandDisplay').innerHTML = '';
+                    document.getElementById('recommendedDisplay').innerHTML = '';
+                    document.getElementById('winRate').innerText = '0%';
+                    document.getElementById('drawRate').innerText = '0%';
+                    document.getElementById('loseRate').innerText = '0%';
+                    document.getElementById('totalOpp').innerText = '0';
+                    renderRuleList();
+                } else devMessage.textContent = '❌ 無法解析規則，請嘗試不同的描述方式';
+            });
+
+            function copyRulesToClipboard() {
+                try {
+                    const rulesData = { tiles, tileDetails, rankMap, rules: customRules };
+                    const jsonStr = JSON.stringify(rulesData, null, 2);
+                    navigator.clipboard.writeText(jsonStr).then(() => {
+                        devMessage.textContent = '✅ 規則內容已複製到剪貼板！請貼至郵件發送給開發者 (siieokkong@gmail.com)';
+                        setTimeout(() => devOverlay.style.display = 'none', 2000);
+                    }).catch(err => devMessage.textContent = '❌ 複製失敗：' + err.message);
+                } catch (err) { devMessage.textContent = '❌ 複製失敗：' + err.message; }
+            }
+
+            devFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (currentDevAction === 'upload') {
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        try {
+                            const newRules = JSON.parse(ev.target.result);
+                            if (!Array.isArray(newRules.tiles) || !newRules.tileDetails || !newRules.rankMap)
+                                throw new Error('JSON 必須包含 tiles (陣列), tileDetails (物件), rankMap (物件)');
+                            const typeSet = new Set();
+                            for (let card of newRules.tiles) {
+                                if (!newRules.tileDetails[card]) throw new Error(`牌 ${card} 缺少詳細資料`);
+                                const detail = newRules.tileDetails[card];
+                                if (typeof detail.type !== 'string' || typeof detail.d1 !== 'number' || typeof detail.d2 !== 'number')
+                                    throw new Error(`牌 ${card} 的詳細資料格式不正確`);
+                                typeSet.add(detail.type);
+                            }
+                            for (let type of typeSet) {
+                                if (newRules.rankMap[type] === undefined)
+                                    throw new Error(`牌型「${type}」在 rankMap 中未定義`);
+                            }
+                            tiles = newRules.tiles;
+                            tileDetails = newRules.tileDetails;
+                            rankMap = newRules.rankMap;
+                            customRules = newRules.rules || [];
+                            saveRulesToStorage(customRules);
+                            allCombinations = generateAllCombinations();
+                            selectedCards = [];
+                            currentHandStats = null; currentHand = null;
+                            updateSelectedUI(); renderGallery();
+                            document.getElementById('resultHandDisplay').innerHTML = '';
+                            document.getElementById('recommendedDisplay').innerHTML = '';
+                            document.getElementById('winRate').innerText = '0%';
+                            document.getElementById('drawRate').innerText = '0%';
+                            document.getElementById('loseRate').innerText = '0%';
+                            document.getElementById('totalOpp').innerText = '0';
+                            devMessage.textContent = '✅ 規則更新成功！';
+                            renderRuleList();
+                            setTimeout(() => devOverlay.style.display = 'none', 1500);
+                        } catch (err) { devMessage.textContent = '❌ 解析失敗：' + err.message; }
+                    };
+                    reader.readAsText(file);
+                }
+                devFileInput.value = '';
+            });
+
+            function downloadWordTemplate() {
+                try {
+                    const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>牌九自訂規則範本</title>
+<style>
+    body { font-family: '微軟正黑體', sans-serif; margin: 40px; }
+    h1 { color: #2c3e50; }
+    h2 { color: #16a085; margin-top: 30px; }
+    .example { background: #ecf0f1; padding: 15px; border-left: 5px solid #3498db; margin: 20px 0; }
+    code { background: #bdc3c7; padding: 2px 5px; border-radius: 3px; }
+    .note { color: #e67e22; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>🀄️ 牌九自訂規則撰寫範本</h1>
+<p>本文件說明如何在牌九勝率分析工具中新增自訂規則。</p>
+
+<h2>📝 使用文字輸入功能（智慧解析）</h2>
+<p>在開發者模式中，點擊「輸入規則文字」，然後輸入類似以下格式的描述：</p>
+<div class="example">
+    <strong>當手牌有兩張天牌和一張雜七、一張雜八時，天牌不能拆開</strong><br>
+    <strong>如果手牌有人牌、雜八、板凳，搭配零霖六或高腳七或雜七或雜九時，人牌必須放尾墩</strong><br>
+    <strong>頭墩點數必須大於等於6點，尾墩點數必須小於等於4點，且頭墩必須比尾墩小</strong>
+</div>
+<p>系統會自動解析並套用規則。支援的關鍵字：</p>
+<ul>
+    <li>「當/如果 ... 時」：描述條件，可包含多個「X張Y」，Y為牌型（如天牌、地牌、雜七等）。</li>
+    <li>「... 不能拆開」：指定哪種牌型不可拆分。</li>
+    <li>「... 一定要拆開」：指定哪種牌型必須拆分。</li>
+    <li>「... 放頭墩 / 放尾墩」：指定哪種牌型必須放在特定墩位。</li>
+    <li>「頭墩/尾墩點數 [大於/小於/等於] X」：對該墩的點數進行限制。</li>
+    <li>「頭墩比尾墩小」：強制頭墩點數小於尾墩。</li>
+</ul>
+
+<h2>📂 方式二：上傳 JSON 規則檔案（進階）</h2>
+<p>若需要多條規則或更複雜的條件，可編輯 JSON 檔案後上傳。JSON 格式範例如下：</p>
+<div class="example">
+<pre>{
+  "tiles": ["天牌A", "天牌B", "地牌A", ...],
+  "tileDetails": {
+    "天牌A": {"type": "天牌", "d1": 6, "d2": 6},
+    ...
+  },
+  "rankMap": {
+    "天牌": 31,
+    ...
+  },
+  "rules": [
+    {
+      "type": "split_pair",
+      "condition": { "天牌": 2, "雜七": 1, "雜八": 1 },
+      "pairType": "天牌"
+    },
+    {
+      "type": "front_points",
+      "condition": { "人牌": 1, "雜八": 1, "板凳": 1 },
+      "comparison": ">=",
+      "value": 6
+    }
+  ]
+}</pre>
+</div>
+
+<p class="note">💡 使用文字輸入功能時，請盡量使用完整的句子，系統會自動理解。</p>
+</body>
+</html>`;
+                    const blob = new Blob(['\uFEFF' + htmlContent], { type: 'application/msword' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.setAttribute('download', '牌九規則範本.doc');
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                    devMessage.textContent = '✅ 規則範本 (Word) 下載成功！';
+                    setTimeout(() => devOverlay.style.display = 'none', 1500);
+                } catch (err) { devMessage.textContent = '❌ 下載失敗：' + err.message; }
+            }
 
             // ---------- 主要功能函數 ----------
             function setStrategy(strategy) {
@@ -950,7 +1620,6 @@
             }
             window.setStrategy = setStrategy;
 
-            // 計算最佳勝率和最佳和率（用於建議）
             function getBestRates() {
                 if (!currentHandStats) return { bestWinRate: 0, bestDrawRate: 0 };
                 let legalGroups = currentHandStats.legalGroups;
@@ -965,91 +1634,6 @@
                     if (drawRate > bestDrawRate) bestDrawRate = drawRate;
                 }
                 return { bestWinRate, bestDrawRate };
-            }
-
-            // 修改後的建議邏輯：當最佳勝率 ≥ 30% 時直接建議勝出優先
-            function updateAdvice() {
-                if (!currentHandStats) return;
-                let { bestWinRate, bestDrawRate } = getBestRates();
-                let adviceBox = document.getElementById('adviceBox');
-                let adviceText = document.getElementById('adviceText');
-                
-                let suggestion = '和局優先';
-                let adviceClass = 'advice-draw';
-
-                if (bestWinRate >= 0.3) {
-                    suggestion = '勝出優先';
-                    adviceClass = 'advice-win';
-                } else if (bestDrawRate > bestWinRate + 0.2) {
-                    suggestion = '和局優先';
-                    adviceClass = 'advice-draw';
-                } else if (bestWinRate > 0.25 && bestDrawRate > 0.25) {
-                    suggestion = '勝出優先';
-                    adviceClass = 'advice-win';
-                } else {
-                    suggestion = '和局優先';
-                    adviceClass = 'advice-draw';
-                }
-
-                adviceText.innerText = suggestion;
-                adviceBox.classList.remove('advice-win', 'advice-draw');
-                adviceBox.classList.add(adviceClass);
-            }
-
-            function updateDisplayWithStrategy() {
-                if (!currentHandStats) return;
-                let legalGroups = currentHandStats.legalGroups;
-                let groupStats = currentHandStats.groupStats;
-                let bestIdx = getBestIndexByStrategy(currentStrategy, legalGroups, groupStats);
-                let bestGroup = legalGroups[bestIdx];
-                let stat = groupStats[bestIdx];
-                let total = stat.win + stat.draw + stat.lose;
-                let winRate = (stat.win / total * 100).toFixed(2);
-                let drawRate = (stat.draw / total * 100).toFixed(2);
-                let loseRate = (stat.lose / total * 100).toFixed(2);
-                
-                // 清空 recommendedDisplay 並重新建構三個元素
-                let recContainer = document.getElementById('recommendedDisplay');
-                recContainer.innerHTML = '';
-
-                // 頭墩
-                let recFrontDiv = document.createElement('div');
-                recFrontDiv.className = 'group-box';
-                recFrontDiv.innerHTML = '<div class="group-label">頭墩</div><div class="group-cards" id="recFront"></div>';
-                recContainer.appendChild(recFrontDiv);
-
-                // 尾墩
-                let recBackDiv = document.createElement('div');
-                recBackDiv.className = 'group-box';
-                recBackDiv.innerHTML = '<div class="group-label">尾墩</div><div class="group-cards" id="recBack"></div>';
-                recContainer.appendChild(recBackDiv);
-
-                // 系統建議容器 (含標籤 + 建議框)
-                let adviceWrapper = document.createElement('div');
-                adviceWrapper.className = 'group-box';
-                let adviceLabel = document.createElement('div');
-                adviceLabel.className = 'group-label';
-                adviceLabel.textContent = '系統建議';
-                adviceWrapper.appendChild(adviceLabel);
-                let adviceDiv = document.createElement('div');
-                adviceDiv.className = 'advice-box';
-                adviceDiv.id = 'adviceBox';
-                adviceDiv.innerHTML = '<div class="advice-text" id="adviceText">勝出優先</div>';
-                adviceWrapper.appendChild(adviceDiv);
-                recContainer.appendChild(adviceWrapper);
-
-                // 渲染頭尾墩
-                renderHand('recFront', bestGroup.front);
-                renderHand('recBack', bestGroup.back);
-
-                // 更新勝率顯示
-                document.getElementById('winRate').innerText = winRate + '%';
-                document.getElementById('drawRate').innerText = drawRate + '%';
-                document.getElementById('loseRate').innerText = loseRate + '%';
-                document.getElementById('totalOpp').innerText = total;
-
-                // 更新系統建議
-                updateAdvice();
             }
 
             function getBestIndexByStrategy(strategy, legalGroups, groupStats) {
@@ -1072,6 +1656,89 @@
                 }
             }
 
+            function updateDisplayWithStrategy() {
+                if (!currentHandStats) return;
+                let legalGroups = currentHandStats.legalGroups;
+                let groupStats = currentHandStats.groupStats;
+                let bestIdx = getBestIndexByStrategy(currentStrategy, legalGroups, groupStats);
+                let bestGroup = legalGroups[bestIdx];
+                let stat = groupStats[bestIdx];
+                let total = stat.win + stat.draw + stat.lose;
+                let winRate = (stat.win / total * 100).toFixed(2);
+                let drawRate = (stat.draw / total * 100).toFixed(2);
+                let loseRate = (stat.lose / total * 100).toFixed(2);
+
+                let recContainer = document.getElementById('recommendedDisplay');
+                recContainer.innerHTML = '';
+
+                let recFrontDiv = document.createElement('div'); recFrontDiv.className = 'group-box';
+                recFrontDiv.innerHTML = '<div class="group-label">頭墩</div><div class="group-cards" id="recFront"></div>';
+                recContainer.appendChild(recFrontDiv);
+                let recBackDiv = document.createElement('div'); recBackDiv.className = 'group-box';
+                recBackDiv.innerHTML = '<div class="group-label">尾墩</div><div class="group-cards" id="recBack"></div>';
+                recContainer.appendChild(recBackDiv);
+                let adviceWrapper = document.createElement('div'); adviceWrapper.className = 'group-box';
+                let adviceLabel = document.createElement('div'); adviceLabel.className = 'group-label'; adviceLabel.textContent = '系統建議';
+                adviceWrapper.appendChild(adviceLabel);
+                let adviceDiv = document.createElement('div'); adviceDiv.className = 'advice-box'; adviceDiv.id = 'adviceBox';
+                adviceDiv.innerHTML = '<div class="advice-text" id="adviceText">勝出優先</div>';
+                adviceWrapper.appendChild(adviceDiv);
+                recContainer.appendChild(adviceWrapper);
+
+                renderHand('recFront', bestGroup.front);
+                renderHand('recBack', bestGroup.back);
+                document.getElementById('winRate').innerText = winRate + '%';
+                document.getElementById('drawRate').innerText = drawRate + '%';
+                document.getElementById('loseRate').innerText = loseRate + '%';
+                document.getElementById('totalOpp').innerText = total;
+                updateAdvice();
+            }
+
+            function updateAdvice() {
+                if (!currentHandStats) return;
+                let legalGroups = currentHandStats.legalGroups;
+                let groupStats = currentHandStats.groupStats;
+                let adviceBox = document.getElementById('adviceBox');
+                let adviceText = document.getElementById('adviceText');
+
+                if (legalGroups.length === 1) {
+                    adviceText.innerText = '';
+                    adviceBox.classList.remove('advice-win', 'advice-draw', 'advice-gray', 'advice-rule');
+                    adviceBox.classList.add('advice-gray');
+                    return;
+                }
+                if (currentHand && isAnyRuleTriggered(currentHand)) {
+                    adviceText.innerText = '規則優先';
+                    adviceBox.classList.remove('advice-win', 'advice-draw', 'advice-gray', 'advice-rule');
+                    adviceBox.classList.add('advice-rule');
+                    return;
+                }
+                let bestWinIdx = getBestIndexByStrategy('win', legalGroups, groupStats);
+                let bestDrawIdx = getBestIndexByStrategy('draw', legalGroups, groupStats);
+                if (bestWinIdx === bestDrawIdx) {
+                    adviceText.innerText = '';
+                    adviceBox.classList.remove('advice-win', 'advice-draw', 'advice-gray', 'advice-rule');
+                    adviceBox.classList.add('advice-gray');
+                    return;
+                }
+                let { bestWinRate, bestDrawRate } = getBestRates();
+                let suggestion = '和局優先';
+                let adviceClass = 'advice-draw';
+                if (bestDrawRate > bestWinRate + 0.2) {
+                    suggestion = '和局優先';
+                    adviceClass = 'advice-draw';
+                } else if (bestWinRate > 0.25 && bestDrawRate > 0.25) {
+                    suggestion = '勝出優先';
+                    adviceClass = 'advice-win';
+                } else {
+                    suggestion = '和局優先';
+                    adviceClass = 'advice-draw';
+                }
+                adviceText.innerText = suggestion;
+                adviceBox.classList.remove('advice-win', 'advice-draw', 'advice-gray', 'advice-rule');
+                adviceBox.classList.add(adviceClass);
+            }
+
             function recordCurrentToHistory() {
                 if (!currentHandStats || !currentHand) return;
                 let legalGroups = currentHandStats.legalGroups;
@@ -1083,32 +1750,17 @@
                 let winRate = (stat.win / total * 100).toFixed(2);
                 let drawRate = (stat.draw / total * 100).toFixed(2);
                 let loseRate = (stat.lose / total * 100).toFixed(2);
-                
                 let handOrdered = bestGroup.front.concat(bestGroup.back);
                 let handStr = handOrdered.join('、');
                 let strategyText = currentStrategy === 'win' ? '⚔️勝' : '🛡️和';
-                
-                historyRecords.unshift({ 
-                    hand: handStr, 
-                    win: winRate + '%', 
-                    draw: drawRate + '%', 
-                    lose: loseRate + '%',
-                    strategy: strategyText
-                });
-
-                if (historyRecords.length > MAX_HISTORY) {
-                    historyRecords = historyRecords.slice(0, MAX_HISTORY);
-                }
+                historyRecords.unshift({ hand: handStr, win: winRate+'%', draw: drawRate+'%', lose: loseRate+'%', strategy: strategyText });
+                if (historyRecords.length > MAX_HISTORY) historyRecords = historyRecords.slice(0, MAX_HISTORY);
                 saveHistoryToStorage(historyRecords);
                 renderHistory();
             }
 
             function nextRound() {
-                if (!currentHandStats || !currentHand) {
-                    resetSelection();
-                    switchTab('pick');
-                    return;
-                }
+                if (!currentHandStats || !currentHand) { resetSelection(); switchTab('pick'); return; }
                 recordCurrentToHistory();
                 resetSelection();
                 switchTab('pick');
@@ -1134,7 +1786,6 @@
                     let div = document.createElement('div');
                     div.className = 'gallery-item';
                     div.dataset.card = card;
-
                     let img = document.createElement('img');
                     img.src = IMAGE_PATH + card + '.png';
                     img.alt = card;
@@ -1146,12 +1797,7 @@
                         div.appendChild(fb);
                     };
                     div.appendChild(img);
-
-                    div.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleSelectCard(card);
-                    });
-
+                    div.addEventListener('click', (e) => { e.stopPropagation(); toggleSelectCard(card); });
                     gallery.appendChild(div);
                 });
             }
@@ -1164,20 +1810,14 @@
                         let card = selectedCards[i];
                         let cardDiv = document.createElement('div');
                         cardDiv.className = 'selected-card';
-
                         let img = document.createElement('img');
                         img.src = IMAGE_PATH + card + '.png';
                         img.alt = card;
                         img.onerror = () => img.style.display = 'none';
-
                         let rm = document.createElement('span');
                         rm.className = 'remove';
                         rm.textContent = '✕';
-                        rm.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            removeCard(card);
-                        });
-
+                        rm.addEventListener('click', (e) => { e.stopPropagation(); removeCard(card); });
                         cardDiv.appendChild(img);
                         cardDiv.appendChild(rm);
                         container.appendChild(cardDiv);
@@ -1188,29 +1828,20 @@
                         container.appendChild(ph);
                     }
                 }
-
                 document.querySelectorAll('.gallery-item').forEach(item => {
                     let card = item.dataset.card;
-                    if (selectedCards.includes(card)) {
-                        item.classList.add('selected');
-                    } else {
-                        item.classList.remove('selected');
-                    }
+                    if (selectedCards.includes(card)) item.classList.add('selected');
+                    else item.classList.remove('selected');
                 });
                 updateSelectedCount();
             }
 
             function toggleSelectCard(card) {
                 let idx = selectedCards.indexOf(card);
-                if (idx !== -1) {
-                    selectedCards.splice(idx, 1);
-                } else {
-                    if (selectedCards.length < MAX_SELECT) {
-                        selectedCards.push(card);
-                    } else {
-                        showError('已經選滿四張牌，請先移除一張');
-                        return;
-                    }
+                if (idx !== -1) selectedCards.splice(idx, 1);
+                else {
+                    if (selectedCards.length < MAX_SELECT) selectedCards.push(card);
+                    else { showError('已經選滿四張牌，請先移除一張'); return; }
                 }
                 clearError();
                 updateSelectedUI();
@@ -1218,10 +1849,7 @@
 
             function removeCard(card) {
                 let idx = selectedCards.indexOf(card);
-                if (idx !== -1) {
-                    selectedCards.splice(idx, 1);
-                    updateSelectedUI();
-                }
+                if (idx !== -1) { selectedCards.splice(idx, 1); updateSelectedUI(); }
             }
 
             function resetSelection() {
@@ -1233,22 +1861,18 @@
 
             function randomSelect() {
                 let shuffled = [...tiles];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
+                for (let i = shuffled.length-1; i>0; i--) {
+                    const j = Math.floor(Math.random()*(i+1));
                     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
                 }
-                selectedCards = shuffled.slice(0, 4);
+                selectedCards = shuffled.slice(0,4);
                 clearError();
                 updateSelectedUI();
             }
             window.randomSelect = randomSelect;
 
-            function showError(msg) {
-                let e = document.getElementById('errorMsg');
-                e.style.display = 'block';
-                e.textContent = msg;
-            }
-            function clearError() { document.getElementById('errorMsg').style.display = 'none'; }
+            function showError(msg) { let e = document.getElementById('errorMsg'); e.style.display='block'; e.textContent=msg; }
+            function clearError() { document.getElementById('errorMsg').style.display='none'; }
 
             function renderHand(containerId, hand) {
                 let container = document.getElementById(containerId);
@@ -1274,82 +1898,45 @@
             function renderHistory() {
                 let container = document.getElementById('historyList');
                 container.innerHTML = '';
-                historyRecords.slice(0, 20).forEach(rec => {
+                historyRecords.slice(0,20).forEach(rec => {
                     let div = document.createElement('div');
                     div.className = 'history-item';
-                    div.innerHTML = `
-                        <div class="hand">${rec.strategy} ${rec.hand}</div>
-                        <div class="stats">
-                            <span class="win">勝 ${rec.win}</span>
-                            <span class="draw">和 ${rec.draw}</span>
-                            <span class="lose">負 ${rec.lose}</span>
-                        </div>
-                    `;
+                    div.innerHTML = `<div class="hand">${rec.strategy} ${rec.hand}</div><div class="stats"><span class="win">勝 ${rec.win}</span><span class="draw">和 ${rec.draw}</span><span class="lose">負 ${rec.lose}</span></div>`;
                     container.appendChild(div);
                 });
             }
 
-            function clearHistory() {
-                if (confirm('是否確認清除所有記錄？')) {
-                    historyRecords = [];
-                    saveHistoryToStorage(historyRecords);
-                    renderHistory();
-                }
-            }
+            function clearHistory() { if (confirm('是否確認清除所有記錄？')) { historyRecords = []; saveHistoryToStorage(historyRecords); renderHistory(); } }
             window.clearHistory = clearHistory;
 
             function exportHistoryCSV() {
-                if (historyRecords.length === 0) {
-                    alert('沒有歷史記錄可導出');
-                    return;
-                }
+                if (historyRecords.length === 0) { alert('沒有歷史記錄可導出'); return; }
                 let csv = "策略,手牌,勝率,和率,負率\n";
                 historyRecords.forEach(rec => {
                     let handStr = rec.hand.replace(/,/g, '、');
                     csv += `"${rec.strategy}","${handStr}",${rec.win},${rec.draw},${rec.lose}\n`;
                 });
-                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
                 const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.href = url;
+                link.href = URL.createObjectURL(blob);
                 link.setAttribute('download', '牌九歷史記錄.csv');
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
             }
             window.exportHistoryCSV = exportHistoryCSV;
 
             function calculateAndShowResult() {
                 clearError();
-                if (selectedCards.length !== 4) {
-                    showError('請選滿四張牌');
-                    return;
-                }
+                if (selectedCards.length !== 4) { showError('請選滿四張牌'); return; }
                 let myHand = [...selectedCards];
                 currentHand = myHand;
-
                 let legalGroups = getLegalGroups(myHand);
-                if (legalGroups.length === 0) {
-                    showError('沒有合法的配牌方式？這不應該發生');
-                    return;
-                }
-
+                if (legalGroups.length === 0) { showError('沒有合法的配牌方式？這不應該發生'); return; }
                 let groupStats = [];
-                for (let i=0; i<legalGroups.length; i++) {
-                    groupStats.push({win:0, draw:0, lose:0});
-                }
-
+                for (let i=0; i<legalGroups.length; i++) groupStats.push({win:0, draw:0, lose:0});
                 for (let oppHand of allCombinations) {
                     let conflict = false;
-                    for (let card of myHand) {
-                        if (oppHand.includes(card)) {
-                            conflict = true;
-                            break;
-                        }
-                    }
+                    for (let card of myHand) { if (oppHand.includes(card)) { conflict = true; break; } }
                     if (conflict) continue;
-
                     for (let gIdx=0; gIdx<legalGroups.length; gIdx++) {
                         let g = legalGroups[gIdx];
                         let res = battleWithGroup(myHand, oppHand, g.front, g.back);
@@ -1358,28 +1945,17 @@
                         else groupStats[gIdx].lose++;
                     }
                 }
-
-                currentHandStats = {
-                    legalGroups: legalGroups,
-                    groupStats: groupStats
-                };
-
+                currentHandStats = { legalGroups, groupStats };
                 renderHand('resultHandDisplay', myHand);
-
                 currentStrategy = 'win';
                 document.getElementById('strategyWinBtn').classList.add('active');
                 document.getElementById('strategyDrawBtn').classList.remove('active');
-                
                 updateDisplayWithStrategy();
-
                 switchTab('result');
             }
             window.calculateAndShowResult = calculateAndShowResult;
 
-            // 初始化
-            window.onload = () => {
-                renderGallery();
-            };
+            window.onload = () => { renderGallery(); };
         })();
     </script>
 </body>
