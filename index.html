@@ -145,6 +145,7 @@
         .dev-box button.download { background: #f39c12; }
         .dev-box button.text-rule { background: #9b59b6; }
         .dev-box button.change-pw { background: #1abc9c; }
+        .dev-box button.threshold { background: #e67e22; }
         .dev-box button.cancel {
             background: #7f8c8d;
             flex: 0 0 auto;
@@ -260,6 +261,11 @@
             color: #f1c40f;
             font-size: 0.9rem;
             white-space: pre-wrap;
+        }
+        .threshold-info {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #bdc3c7;
         }
 
         /* 主要容器 */
@@ -794,7 +800,7 @@
         </div>
     </div>
 
-    <!-- 開發者彈窗 (移除複製按鈕) -->
+    <!-- 開發者彈窗 -->
     <div id="devOverlay" class="dev-overlay">
         <div class="dev-box">
             <h3>🔧 開發者模式</h3>
@@ -805,6 +811,7 @@
                 <button class="text-rule" id="devTextRuleBtn">📝 輸入規則文字</button>
                 <button class="change-pw" id="devChangeLoginPwBtn">🔑 修改登入密碼</button>
                 <button class="change-pw" id="devChangeDevPwBtn">🔒 修改開發者密碼</button>
+                <button class="threshold" id="devThresholdBtn">⚙️ 設定建議閾值</button>
             </div>
             <!-- 文字規則輸入區塊 -->
             <div class="dev-textarea" id="devTextArea">
@@ -831,6 +838,8 @@
                 <h4>📋 目前自訂規則 (點選刪除)</h4>
                 <div id="ruleItemsContainer"></div>
             </div>
+            <!-- 當前閾值顯示 -->
+            <div class="threshold-info" id="thresholdDisplay">當前建議閾值：15%</div>
             <!-- 取消按鈕 -->
             <button class="cancel" id="devCancelBtn">取消</button>
             <div id="devMessage" class="dev-message"></div>
@@ -913,7 +922,7 @@
         <div class="error-msg" id="errorMsg"></div>
         <div class="footer">
             🎴 牌九 32 張｜圖片來源：GitHub (alexkong123/PG-Game)<br>
-            💡 開發者 ALEX KONG 版本:V01.00.00
+            💡 程式開發 ALEX KONG 版本V01.00.00
         </div>
     </div>
 
@@ -923,6 +932,7 @@
             const STORAGE_LOGIN_PW = 'paijiu_login_password';
             const STORAGE_DEV_PW = 'paijiu_dev_password';
             const STORAGE_RULES = 'paijiu_custom_rules';
+            const STORAGE_THRESHOLD = 'paijiu_advice_threshold';
 
             function getLoginPassword() {
                 return localStorage.getItem(STORAGE_LOGIN_PW) || '@123456';
@@ -942,6 +952,17 @@
             function loadRulesFromStorage() {
                 try { const stored = localStorage.getItem(STORAGE_RULES); if (stored) return JSON.parse(stored); } catch (e) {}
                 return [];
+            }
+            function getAdviceThreshold() {
+                const stored = localStorage.getItem(STORAGE_THRESHOLD);
+                if (stored !== null) {
+                    const val = parseFloat(stored);
+                    if (!isNaN(val) && val >= 0) return val;
+                }
+                return 15;
+            }
+            function setAdviceThreshold(val) {
+                localStorage.setItem(STORAGE_THRESHOLD, val.toString());
             }
 
             // ---------- 牌九核心資料 ----------
@@ -980,7 +1001,6 @@
 
             let customRules = loadRulesFromStorage();
 
-            // ---------- 圖片路徑：GitHub 上的 IMAGE 資料夾 ----------
             const IMAGE_PATH = 'https://raw.githubusercontent.com/alexkong123/PG-Game/04136cf202a2722f5d3e1070eb34d2030f698a35/image/';
 
             // ---------- 輔助函數 ----------
@@ -1199,7 +1219,7 @@
             });
             passwordInput.addEventListener('keypress', e => { if (e.key === 'Enter') submitBtn.click(); });
 
-            // ---------- 開發者功能 (移除複製相關) ----------
+            // ---------- 開發者功能 ----------
             const devOverlay = document.getElementById('devOverlay');
             const devButton = document.getElementById('devButton');
             const devPassword = document.getElementById('devPassword');
@@ -1208,6 +1228,7 @@
             const devTextRuleBtn = document.getElementById('devTextRuleBtn');
             const devChangeLoginPwBtn = document.getElementById('devChangeLoginPwBtn');
             const devChangeDevPwBtn = document.getElementById('devChangeDevPwBtn');
+            const devThresholdBtn = document.getElementById('devThresholdBtn');
             const devCancelBtn = document.getElementById('devCancelBtn');
             const devMessage = document.getElementById('devMessage');
             const devFileInput = document.getElementById('devFileInput');
@@ -1223,6 +1244,7 @@
             const rulePreview = document.getElementById('rulePreview');
             const rulePreviewContent = document.getElementById('rulePreviewContent');
             const ruleItemsContainer = document.getElementById('ruleItemsContainer');
+            const thresholdDisplay = document.getElementById('thresholdDisplay');
 
             let currentDevAction = '';
             let currentPwTarget = '';
@@ -1340,6 +1362,26 @@
                 } else devMessage.textContent = '❌ 開發者密碼錯誤';
             });
 
+            // 設定閾值按鈕
+            devThresholdBtn.addEventListener('click', () => {
+                if (devPassword.value !== getDevPassword()) {
+                    devMessage.textContent = '❌ 開發者密碼錯誤';
+                    return;
+                }
+                const current = getAdviceThreshold();
+                const input = prompt(`請輸入新的建議閾值 (百分比，當前 ${current}%):`, current);
+                if (input === null) return;
+                const val = parseFloat(input);
+                if (isNaN(val) || val < 0) {
+                    devMessage.textContent = '❌ 請輸入有效的正數';
+                    return;
+                }
+                setAdviceThreshold(val);
+                updateThresholdDisplay();
+                devMessage.textContent = `✅ 建議閾值已設為 ${val}%`;
+                setTimeout(() => devMessage.textContent = '', 2000);
+            });
+
             confirmPwChangeBtn.addEventListener('click', () => {
                 const pw1 = newPw1.value.trim();
                 const pw2 = newPw2.value.trim();
@@ -1356,7 +1398,12 @@
             cancelTextBtn.addEventListener('click', () => { devTextArea.style.display = 'none'; rulePreview.style.display = 'none'; });
             devCancelBtn.addEventListener('click', () => devOverlay.style.display = 'none');
 
-            // ---------- 智慧規則解析器 (支援「搭配」結構) ----------
+            function updateThresholdDisplay() {
+                if (thresholdDisplay) thresholdDisplay.innerText = `當前建議閾值：${getAdviceThreshold()}%`;
+            }
+            updateThresholdDisplay();
+
+            // ---------- 智慧規則解析器 ----------
             function parseChineseNumber(str) {
                 const map = {'一':1,'二':2,'兩':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
                 if (str.match(/^\d+$/)) return parseInt(str,10);
@@ -1415,7 +1462,6 @@
                     const parts = conditionStr.split('搭配');
                     const fixedPart = parts[0].trim();
                     const optionalPart = parts[1].trim();
-                    
                     const fixedConditions = [];
                     const fixedFragments = fixedPart.split(/[、，,和]+/).map(s => s.trim()).filter(s => s.length > 0);
                     for (let frag of fixedFragments) {
@@ -1428,7 +1474,6 @@
                             fixedCond[type] = (fixedCond[type] || 0) + cnt;
                         }
                     });
-                    
                     const optionalItems = optionalPart.split(/或|或者/).map(s => s.trim()).filter(s => s.length > 0);
                     const resultConditions = [];
                     for (let item of optionalItems) {
@@ -1508,7 +1553,6 @@
                 } else devMessage.textContent = '❌ 無法解析規則，請嘗試不同的描述方式';
             });
 
-            // 下載 Word 範本 (與前版相同)
             function downloadWordTemplate() {
                 try {
                     const htmlContent = `<!DOCTYPE html>
@@ -1763,17 +1807,14 @@
                     return;
                 }
                 let { bestWinRate, bestDrawRate } = getBestRates();
-                let suggestion = '和局優先';
-                let adviceClass = 'advice-draw';
-                if (bestDrawRate > bestWinRate + 0.2) {
+                let threshold = getAdviceThreshold() / 100;
+                let suggestion, adviceClass;
+                if (bestDrawRate > bestWinRate + threshold) {
                     suggestion = '和局優先';
                     adviceClass = 'advice-draw';
-                } else if (bestWinRate > 0.25 && bestDrawRate > 0.25) {
+                } else {
                     suggestion = '勝出優先';
                     adviceClass = 'advice-win';
-                } else {
-                    suggestion = '和局優先';
-                    adviceClass = 'advice-draw';
                 }
                 adviceText.innerText = suggestion;
                 adviceBox.classList.remove('advice-win', 'advice-draw', 'advice-gray', 'advice-rule');
