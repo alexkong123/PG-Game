@@ -891,8 +891,8 @@
                         <div class="your-hand-title">🃏 你的手牌</div>
                         <div class="hand-display" id="resultHandDisplay"></div>
                         <div class="strategy-switch">
-                            <div id="strategyWinBtn" class="strategy-btn win active" onclick="setStrategy('win')">⚔️ 勝出優先</div>
-                            <div id="strategyDrawBtn" class="strategy-btn draw" onclick="setStrategy('draw')">🛡️ 和局優先</div>
+                            <div id="strategyWinBtn" class="strategy-btn win active" onclick="setStrategy('win')">⚔️ 擺法一</div>
+                            <div id="strategyDrawBtn" class="strategy-btn draw" onclick="setStrategy('draw')">🛡️ 擺法二</div>
                         </div>
                         <div class="best-group-title">🏠 推薦配牌 & 系統建議</div>
                         <div class="group-row" id="recommendedDisplay"></div>
@@ -1764,7 +1764,7 @@
                 let adviceLabel = document.createElement('div'); adviceLabel.className = 'group-label'; adviceLabel.textContent = '系統建議';
                 adviceWrapper.appendChild(adviceLabel);
                 let adviceDiv = document.createElement('div'); adviceDiv.className = 'advice-box'; adviceDiv.id = 'adviceBox';
-                adviceDiv.innerHTML = '<div class="advice-text" id="adviceText">勝出優先</div>';
+                adviceDiv.innerHTML = '<div class="advice-text" id="adviceText">擺法一</div>';
                 adviceWrapper.appendChild(adviceDiv);
                 recContainer.appendChild(adviceWrapper);
 
@@ -1824,10 +1824,10 @@
                 let threshold = getAdviceThreshold() / 100;
                 let suggestion, adviceClass;
                 if (bestDrawRate > bestWinRate + threshold) {
-                    suggestion = '和局優先';
+                    suggestion = '擺法二';
                     adviceClass = 'advice-draw';
                 } else {
-                    suggestion = '勝出優先';
+                    suggestion = '擺法一';
                     adviceClass = 'advice-win';
                 }
                 adviceText.innerText = suggestion;
